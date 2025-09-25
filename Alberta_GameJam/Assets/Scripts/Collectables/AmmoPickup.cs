@@ -2,8 +2,8 @@ using UnityEngine;
 
 namespace Game.Collectables
 {
-    [RequireComponent(typeof(Collider))]
-    [RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(Collider2D))]
+    [RequireComponent(typeof(Rigidbody2D))]
     public class AmmoPickup : MonoBehaviour
     {
         public int ammoAmount = 12;
@@ -11,20 +11,20 @@ namespace Game.Collectables
 
         private void Awake()
         {
-            // Ensure trigger + kinematic rigidbody for reliable trigger events with CharacterController
-            var col = GetComponent<Collider>();
+            // Ensure trigger + kinematic 2D rigidbody for reliable trigger events
+            var col = GetComponent<Collider2D>();
             col.isTrigger = true;
-            var rb = GetComponent<Rigidbody>();
+            var rb = GetComponent<Rigidbody2D>();
             rb.isKinematic = true;
-            rb.useGravity = false;
+            rb.gravityScale = 0f;
         }
 
         private void Update()
         {
-            transform.Rotate(0f, rotateSpeed * Time.deltaTime, 0f, Space.World);
+            transform.Rotate(0f, 0f, rotateSpeed * Time.deltaTime, Space.World);
         }
 
-        private void OnTriggerEnter(Collider other)
+        private void OnTriggerEnter2D(Collider2D other)
         {
             var weapon = other.GetComponentInParent<Game.Player.PlayerWeapon>();
             if (weapon != null)

@@ -23,6 +23,7 @@ namespace Game.Player
         public float reloadTime = 1.1f; 
 
         [Header("Input")] 
+        public bool enableInput = false; // disable manual fire by default when using auto-attack controller
         public Game.Core.InputSystem_Actions inputActions;
 
         private float _nextShotTime = 0f; 
@@ -39,6 +40,7 @@ namespace Game.Player
 
         private void OnEnable()
         {
+            if (!enableInput) return;
             inputActions.Enable();
             inputActions.Player.Fire.performed += OnFirePerformed;
             inputActions.Player.Fire.canceled += OnFireCanceled;
@@ -47,6 +49,7 @@ namespace Game.Player
 
         private void OnDisable()
         {
+            if (!enableInput) return;
             inputActions.Player.Fire.performed -= OnFirePerformed;
             inputActions.Player.Fire.canceled -= OnFireCanceled;
             inputActions.Player.Reload.performed -= OnReloadPerformed;
@@ -71,6 +74,7 @@ namespace Game.Player
 
         private void Update()
         {
+            if (!enableInput) return;
             if (automatic && _isFiringHeld)
             {
                 TryShoot();
@@ -94,6 +98,7 @@ namespace Game.Player
             currentAmmo--;
             onAmmoChanged?.Invoke(currentAmmo, reserveAmmo, magazineSize);
 
+            // In 2D, projectiles travel along transform.right; ensure muzzle.rotation aligns right with aim
             var proj = Instantiate(projectilePrefab, muzzle.position, muzzle.rotation);
             proj.Initialize(projectileDamage, hitsPlayer: false, hitsEnemy: true);
             proj.IgnoreOwnerCollisions(ownerRoot != null ? ownerRoot : transform.root);
