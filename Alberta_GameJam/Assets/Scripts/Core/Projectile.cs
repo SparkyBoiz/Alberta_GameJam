@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace Game.Core
 {
-    [RequireComponent(typeof(Collider))]
+    [RequireComponent(typeof(Collider2D))]
+    [RequireComponent(typeof(Rigidbody2D))]
     public class Projectile : MonoBehaviour
     {
         [Header("Projectile Settings")] 
@@ -11,7 +12,7 @@ namespace Game.Core
         public float damage = 10f; 
         [Tooltip("If true, this projectile will attempt to damage PlayerHealth components")] 
         public bool damagePlayer = false; 
-        [Tooltip("If true, this projectile will attempt to damage Enemy targets (requires a component exposing TakeDamage(float) named 'EnemyHealth' or an IDamageable interface if added later)")] 
+        [Tooltip("If true, this projectile will attempt to damage Enemy targets")] 
         public bool damageEnemy = false;
 
         [Header("Impact Settings")] 
@@ -19,28 +20,27 @@ namespace Game.Core
         public GameObject hitVfx;
 
         private float _despawnAt; 
-        private Collider _collider; 
+        private Collider2D _collider2D; 
+        private Rigidbody2D _rb2D;
         private Transform _ignoreRoot; 
 
         private void Awake()
         {
-            _collider = GetComponent<Collider>();
-            _collider.isTrigger = true; // Use trigger-based hits for simple projectiles
+            _collider2D = GetComponent<Collider2D>();
+            _collider2D.isTrigger = true;
 
-            // Ensure a Rigidbody exists for trigger events to fire; keep it kinematic
-            var rb = GetComponent<Rigidbody>();
-            if (rb == null)
-            {
-                rb = gameObject.AddComponent<Rigidbody>();
-            }
-            rb.isKinematic = true;
-            rb.useGravity = false;
-            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            _rb2D = GetComponent<Rigidbody2D>();
+            _rb2D.isKinematic = false;
+            _rb2D.gravityScale = 0f;
+            _rb2D.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            _rb2D.interpolation = RigidbodyInterpolation2D.Interpolate;
         }
 
         private void OnEnable()
         {
             _despawnAt = Time.time + lifetime;
+            // Ensure initial velocity aligns with facing. We use transform.right as the forward direction in 2D.
+            _rb2D.linearVelocity = (Vector2)transform.right * speed;
         }
 
         public void Initialize(float damageAmount, bool hitsPlayer, bool hitsEnemy)
@@ -53,23 +53,22 @@ namespace Game.Core
         public void IgnoreOwnerCollisions(Transform ownerRoot)
         {
             _ignoreRoot = ownerRoot;
-            if (_collider == null) return;
-            if (_ignoreRoot == null) return;
+            if (_collider2D == null || _ignoreRoot == null) return;
 
-            var ownerColliders = _ignoreRoot.GetComponentsInChildren<Collider>(true);
+            var ownerColliders = _ignoreRoot.GetComponentsInChildren<Collider2D>(true);
             foreach (var oc in ownerColliders)
             {
-                if (oc != null && oc != _collider)
+                if (oc != null && oc != _collider2D)
                 {
-                    Physics.IgnoreCollision(_collider, oc, true);
+                    Physics2D.IgnoreCollision(_collider2D, oc, true);
                 }
             }
         }
 
         private void Update()
         {
-            // Move forward in local space
-            transform.position += transform.forward * (speed * Time.deltaTime);
+            // Keep velocity in sync if someone rotates the projectile after launch
+            _rb2D.linearVelocity = (Vector2)transform.right * speed;
 
             // Lifetime expiry
             if (Time.time >= _despawnAt)
@@ -78,7 +77,7 @@ namespace Game.Core
             }
         }
 
-        private void OnTriggerEnter(Collider other)
+        private void OnTriggerEnter2D(Collider2D other)
         {
             // Ignore collisions with owner
             if (_ignoreRoot != null && other.transform.IsChildOf(_ignoreRoot))
@@ -119,14 +118,14 @@ namespace Game.Core
         private void OnDisable()
         {
             // Re-enable any ignored collisions (optional cleanup)
-            if (_ignoreRoot != null && _collider != null)
+            if (_ignoreRoot != null && _collider2D != null)
             {
-                var ownerColliders = _ignoreRoot.GetComponentsInChildren<Collider>(true);
+                var ownerColliders = _ignoreRoot.GetComponentsInChildren<Collider2D>(true);
                 foreach (var oc in ownerColliders)
                 {
-                    if (oc != null && oc != _collider)
+                    if (oc != null && oc != _collider2D)
                     {
-                        Physics.IgnoreCollision(_collider, oc, false);
+                        Physics2D.IgnoreCollision(_collider2D, oc, false);
                     }
                 }
             }
