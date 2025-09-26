@@ -1,158 +1,65 @@
 using UnityEngine;
-using UnityEngine.AI;
 using Game.Core;
 
 namespace Game.Enemy
 {
-    [RequireComponent(typeof(NavMeshAgent))]
+    [RequireComponent(typeof(Rigidbody2D))]
     public class EnemyAI : MonoBehaviour
     {
-        public enum State
-        {
-            Patrol,
-            Chase,
-            Attack
-        }
-
         [Header("References")]
-        public Transform[] patrolPoints;
-        public Transform target; // typically the player
-        public Transform muzzle;
+        public Transform target; // the player
+        public Transform muzzle; // where bullets spawn (must point right, +X)
         public Projectile projectilePrefab;
         public Transform ownerRoot;
 
-        [Header("AI Settings")]
-        public float sightRange = 12f;
-        public float attackRange = 8f;
-        public float fireRate = 1.5f;
-        public float projectileDamage = 10f;
-        public float repathInterval = 0.2f;
+        [Header("Movement")]
+        public float moveSpeed = 2.5f;
+        public float rotationSpeed = 720f; // deg/sec towards player
+        public float stopRange = 0.15f; // minimal distance to avoid jitter when very close
 
-        private NavMeshAgent _agent;
-        private int _currentPatrolIndex = 0;
-        private float _nextRepathTime = 0f;
-        private float _nextShotTime = 0f;
-        private State _state = State.Patrol;
+        [Header("Combat")]
+        public float attackRange = 8f;
+        public float fireRate = 1.5f; // shots per second
+        public float projectileDamage = 10f;
+
+        private Rigidbody2D _rb;
+        private float _nextShotTime;
 
         private void Awake()
         {
-            _agent = GetComponent<NavMeshAgent>();
-            _agent.updateRotation = false; // we will rotate manually on XZ plane
-            _agent.updateUpAxis = false;
+            _rb = GetComponent<Rigidbody2D>();
+            _rb.gravityScale = 0f;
+            _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
         }
 
-        private void Start()
+        private void FixedUpdate()
         {
-            if (patrolPoints != null && patrolPoints.Length > 0)
+            if (target == null)
             {
-                _currentPatrolIndex = 0;
-                _agent.SetDestination(patrolPoints[_currentPatrolIndex].position);
-            }
-        }
-
-        private void Update()
-        {
-            UpdateState();
-            TickState();
-        }
-
-        private void UpdateState()
-        {
-            float distToTarget = Mathf.Infinity;
-            bool canSeeTarget = false;
-
-            if (target != null)
-            {
-                distToTarget = Vector3.Distance(transform.position, target.position);
-                canSeeTarget = distToTarget <= sightRange && HasLineOfSight(target);
-            }
-
-            switch (_state)
-            {
-                case State.Patrol:
-                    if (canSeeTarget)
-                    {
-                        _state = distToTarget <= attackRange ? State.Attack : State.Chase;
-                    }
-                    break;
-                case State.Chase:
-                    if (!canSeeTarget)
-                    {
-                        _state = State.Patrol;
-                    }
-                    else if (distToTarget <= attackRange)
-                    {
-                        _state = State.Attack;
-                    }
-                    break;
-                case State.Attack:
-                    if (!canSeeTarget)
-                    {
-                        _state = State.Patrol;
-                    }
-                    else if (distToTarget > attackRange * 1.15f)
-                    {
-                        _state = State.Chase;
-                    }
-                    break;
-            }
-        }
-
-        private void TickState()
-        {
-            switch (_state)
-            {
-                case State.Patrol:
-                    DoPatrol();
-                    break;
-                case State.Chase:
-                    DoChase();
-                    break;
-                case State.Attack:
-                    DoAttack();
-                    break;
-            }
-        }
-
-        private void DoPatrol()
-        {
-            if (patrolPoints == null || patrolPoints.Length == 0)
-            {
-                _agent.ResetPath();
+                _rb.linearVelocity = Vector2.zero;
                 return;
             }
 
-            if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance)
-            {
-                _currentPatrolIndex = (_currentPatrolIndex + 1) % patrolPoints.Length;
-                _agent.SetDestination(patrolPoints[_currentPatrolIndex].position);
-            }
-        }
+            Vector2 pos = _rb.position;
+            Vector2 toTarget = (Vector2)target.position - pos;
+            float dist = toTarget.magnitude;
+            Vector2 dir = dist > 0.0001f ? toTarget / dist : Vector2.zero;
 
-        private void DoChase()
-        {
-            if (target == null) { _state = State.Patrol; return; }
-            if (Time.time >= _nextRepathTime)
-            {
-                _agent.SetDestination(target.position);
-                _nextRepathTime = Time.time + repathInterval;
-            }
-            RotateTowards(target.position);
-        }
+            // Move toward the player (stop if extremely close to reduce jitter)
+            Vector2 desiredVel = dist > stopRange ? dir * moveSpeed : Vector2.zero;
+            Vector2 step = desiredVel * Time.fixedDeltaTime;
+            _rb.MovePosition(pos + step);
 
-        private void DoAttack()
-        {
-            if (target == null) { _state = State.Patrol; return; }
-            // Maintain some chasing behaviour while attacking (keep within attack range)
-            if (Time.time >= _nextRepathTime)
+            // Face the player (rotate around Z so +X points toward target)
+            if (dir.sqrMagnitude > 0.0001f)
             {
-                _agent.SetDestination(target.position);
-                _nextRepathTime = Time.time + repathInterval;
+                float targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+                float newAngle = Mathf.MoveTowardsAngle(_rb.rotation, targetAngle, rotationSpeed * Time.fixedDeltaTime);
+                _rb.MoveRotation(newAngle);
             }
 
-            RotateTowards(target.position);
-
-            if (Time.time >= _nextShotTime)
+            // Shoot if within range
+            if (dist <= attackRange && Time.time >= _nextShotTime)
             {
                 ShootAt(target.position);
                 _nextShotTime = Time.time + 1f / Mathf.Max(0.01f, fireRate);
@@ -163,43 +70,20 @@ namespace Game.Enemy
         {
             if (projectilePrefab == null || muzzle == null) return;
 
-            Vector3 dir = (worldPos - muzzle.position);
-            dir.y = 0f;
-            if (dir.sqrMagnitude < 0.001f) return;
+            Vector2 from = muzzle.position;
+            Vector2 to = worldPos;
+            Vector2 dir = (to - from);
+            if (dir.sqrMagnitude < 0.0001f) return;
 
-            Quaternion rot = Quaternion.LookRotation(dir.normalized, Vector3.up);
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            Quaternion rot = Quaternion.AngleAxis(angle, Vector3.forward);
             var proj = Instantiate(projectilePrefab, muzzle.position, rot);
             proj.Initialize(projectileDamage, hitsPlayer: true, hitsEnemy: false);
             proj.IgnoreOwnerCollisions(ownerRoot != null ? ownerRoot : transform);
         }
 
-        private bool HasLineOfSight(Transform tgt)
-        {
-            Vector3 origin = transform.position + Vector3.up * 0.5f;
-            Vector3 dest = tgt.position + Vector3.up * 0.5f;
-            Vector3 dir = (dest - origin);
-            float dist = dir.magnitude;
-            dir /= dist;
-
-            if (Physics.Raycast(origin, dir, out RaycastHit hit, dist, ~0, QueryTriggerInteraction.Ignore))
-            {
-                return hit.transform == tgt || hit.transform.IsChildOf(tgt);
-            }
-            return true;
-        }
-
-        private void RotateTowards(Vector3 worldPos)
-        {
-            Vector3 dir = worldPos - transform.position;
-            dir.y = 0f;
-            if (dir.sqrMagnitude <= 0.0001f) return;
-            Quaternion rot = Quaternion.LookRotation(dir.normalized, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, rot, 0.2f);
-        }
-
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = Color.yellow; Gizmos.DrawWireSphere(transform.position, sightRange);
             Gizmos.color = Color.red; Gizmos.DrawWireSphere(transform.position, attackRange);
         }
     }
