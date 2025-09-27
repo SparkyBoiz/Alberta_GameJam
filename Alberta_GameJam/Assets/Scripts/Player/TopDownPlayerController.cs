@@ -113,7 +113,7 @@ namespace Game.Player
 
         void HandleMoving()
         {
-            _soundWord.Spawn(transform.position, Vector3.up, 2f);
+            _soundWord.Spawn(transform.position, Vector3.up, 1f);
         }
 
         void HandleMovingPhysics()

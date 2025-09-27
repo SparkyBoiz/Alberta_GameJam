@@ -50,5 +50,8 @@ TagManager:
   - name: FadeEffect
     uniqueID: 1153490265
     locked: 0
+  - name: Ghost
+    uniqueID: 1586977003
+    locked: 0
   m_RenderingLayers:
   - Default
