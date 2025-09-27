@@ -26,7 +26,6 @@ public class Ghost : MonoBehaviour
         EnterIdle();
     }
 
-    // Update is called once per frame
     void Update()
     {
         switch (state)
@@ -38,7 +37,7 @@ public class Ghost : MonoBehaviour
                 HandlePatrol();
                 break;
             case State.Trapped:
-                // Do nothing while trapped
+                HandleTrapped();
                 break;
         }
     }
@@ -61,6 +60,11 @@ public class Ghost : MonoBehaviour
             agent.isStopped = false;
         }
         EnterIdle();
+    }
+
+    void HandleTrapped()
+    {
+        // Do nothing while trapped
     }
 
     void EnterIdle()
