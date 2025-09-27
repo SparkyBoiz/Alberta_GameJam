@@ -8,7 +8,8 @@ public class Ghost : MonoBehaviour
     public enum State
     {
         Idle,
-        Patrol
+        Patrol,
+        Trapped
     }
 
     NavMeshAgent agent;
@@ -36,7 +37,30 @@ public class Ghost : MonoBehaviour
             case State.Patrol:
                 HandlePatrol();
                 break;
+            case State.Trapped:
+                // Do nothing while trapped
+                break;
         }
+    }
+
+    public void EnterTrapped(float duration)
+    {
+        if (agent != null)
+        {
+            agent.isStopped = true;
+        }
+        state = State.Trapped;
+        StartCoroutine(TrappedTimer(duration));
+    }
+
+    private System.Collections.IEnumerator TrappedTimer(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        if (agent != null)
+        {
+            agent.isStopped = false;
+        }
+        EnterIdle();
     }
 
     void EnterIdle()

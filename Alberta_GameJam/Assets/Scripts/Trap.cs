@@ -22,16 +22,8 @@ public class Trap : MonoBehaviour
 
     private System.Collections.IEnumerator TrapGhost(Ghost ghost)
     {
-        UnityEngine.AI.NavMeshAgent agent = ghost.GetComponent<UnityEngine.AI.NavMeshAgent>();
-        if (agent != null)
-        {
-            agent.isStopped = true;
-        }
+        ghost.EnterTrapped(trapDuration);
         yield return new WaitForSeconds(trapDuration);
-        if (agent != null)
-        {
-            agent.isStopped = false;
-        }
         gameObject.SetActive(false);
     }
 }
