@@ -39,8 +39,8 @@ MonoBehaviour:
     serializedVersion: 2
     x: 89
     y: 123
-    width: 651
-    height: 2534
+    width: 649
+    height: 2515
 --- !u!114 &114350483966674976
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3329,7 +3329,7 @@ MonoBehaviour:
   - link:
     - context: {fileID: 8926484042661614700}
       slotIndex: 0
-  eventName: OnPlay
+  eventName: OnSpawn
 --- !u!114 &8926484042661615031
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -33,6 +33,6 @@ public class SoundWord : MonoBehaviour
         visualEffect.SetVector3("Direction", direction);
         visualEffect.SetFloat("Size", size);
         visualEffect.SetFloat("Speed", speed);
-        visualEffect.SendEvent("OnPlay");
+        visualEffect.SendEvent("OnSpawn");
     }
 }
