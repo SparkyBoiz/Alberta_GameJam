@@ -33,7 +33,6 @@ namespace Game.Player
             {
                 inputActions = new Game.Core.InputSystem_Actions();
             }
-            // ...existing code...
         }
 
         private void OnEnable()
@@ -118,10 +117,8 @@ namespace Game.Player
 
         void HandleMovingPhysics()
         {
-            // WASD movement
             _rb.linearVelocity = _moveInput * moveSpeed;
 
-            // Flip player horizontally when moving left/right (A/D)
             if (_moveInput.x > 0.01f)
             {
                 transform.localScale = new Vector3(1f, transform.localScale.y, transform.localScale.z);
