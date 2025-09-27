@@ -1,11 +1,13 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class Ghost : MonoBehaviour
 {
     [SerializeField] float moveRadius;
     [SerializeField] float idleDuration = 3f;
     [SerializeField] int maxHealth = 10;
+    [SerializeField] Image healthBar;
 
     public enum State
     {
@@ -20,6 +22,7 @@ public class Ghost : MonoBehaviour
     State state;
     SoundWord soundEffect;
     int health;
+    public bool isTracked;
 
     void Awake()
     {
@@ -29,6 +32,7 @@ public class Ghost : MonoBehaviour
         soundEffect = GetComponentInChildren<SoundWord>();
         health = maxHealth;
         EnterIdle();
+        isTracked = false;
     }
 
     void Update()
@@ -48,6 +52,9 @@ public class Ghost : MonoBehaviour
                 HandleDying();
                 break;
         }
+
+        if (isTracked) healthBar.gameObject.SetActive(true);
+        else healthBar.gameObject.SetActive(false);
     }
 
     public void EnterTrapped(float duration)
@@ -161,6 +168,7 @@ public class Ghost : MonoBehaviour
     {
         health -= amount;
         health = Mathf.Max(0, health);
+        healthBar.fillAmount = (float)health / (float)maxHealth;
         if (health == 0 && state != State.Dying)
         {
             EnterDying();

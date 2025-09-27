@@ -26,24 +26,26 @@ public class Flashlight : MonoBehaviour
 
         for (int i = _trackedGhosts.Count - 1; i >= 0; i--)
         {
-            var entry = _trackedGhosts[i];
-            if (entry == null || entry.ghost == null)
+            var tracked = _trackedGhosts[i];
+            var ghost = tracked.ghost;
+
+            if (ghost == null)
             {
                 _trackedGhosts.RemoveAt(i);
                 continue;
             }
 
-            if (time >= entry.nextAttackTime)
+            if (time >= tracked.nextAttackTime)
             {
-                ApplyDamage(entry.ghost);
+                ApplyDamage(ghost);
 
-                if (entry.ghost == null)
+                if (ghost == null)
                 {
                     _trackedGhosts.RemoveAt(i);
                     continue;
                 }
 
-                entry.nextAttackTime = time + interval;
+                tracked.nextAttackTime = time + interval;
             }
         }
     }
@@ -56,15 +58,17 @@ public class Flashlight : MonoBehaviour
             return;
         }
 
+        ghost.isTracked = true;
+
         var interval = GetAttackInterval();
         var time = Time.time;
 
         for (int i = 0; i < _trackedGhosts.Count; i++)
         {
-            var entry = _trackedGhosts[i];
-            if (entry != null && entry.ghost == ghost)
+            var tracked = _trackedGhosts[i];
+            if (tracked.ghost == ghost)
             {
-                entry.nextAttackTime = time + interval;
+                tracked.nextAttackTime = time + interval;
                 return;
             }
         }
@@ -90,12 +94,13 @@ public class Flashlight : MonoBehaviour
             return;
         }
 
+        ghost.isTracked = false;
+
         for (int i = _trackedGhosts.Count - 1; i >= 0; i--)
         {
-            var entry = _trackedGhosts[i];
-            if (entry != null && entry.ghost == ghost)
+            if (_trackedGhosts[i].ghost == ghost)
             {
-                entry.ghost = null;
+                _trackedGhosts.RemoveAt(i);
                 break;
             }
         }
@@ -103,6 +108,15 @@ public class Flashlight : MonoBehaviour
 
     void OnDisable()
     {
+        for (int i = 0; i < _trackedGhosts.Count; i++)
+        {
+            var ghost = _trackedGhosts[i].ghost;
+            if (ghost != null)
+            {
+                ghost.isTracked = false;
+            }
+        }
+
         _trackedGhosts.Clear();
     }
 

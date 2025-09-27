@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Ghost
   layers:
   - Default
   - TransparentFX
@@ -47,11 +48,14 @@ TagManager:
   - name: VFX
     uniqueID: 3942986421
     locked: 0
-  - name: FadeEffect
-    uniqueID: 1153490265
-    locked: 0
   - name: Ghost
     uniqueID: 1586977003
+    locked: 0
+  - name: UI
+    uniqueID: 2991596151
+    locked: 0
+  - name: FadeEffect
+    uniqueID: 1153490265
     locked: 0
   m_RenderingLayers:
   - Default
