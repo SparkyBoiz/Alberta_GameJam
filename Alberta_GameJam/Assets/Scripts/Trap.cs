@@ -4,7 +4,7 @@ public class Trap : MonoBehaviour
 {
     [SerializeField] private float trapDuration = 2f;
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter2D(Collider2D other)
     {
         Ghost ghost = other.GetComponent<Ghost>();
         if (ghost != null)

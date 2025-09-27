@@ -5,17 +5,21 @@ public class Ghost : MonoBehaviour
 {
     [SerializeField] float moveRadius;
     [SerializeField] float idleDuration = 3f;
+    [SerializeField] int maxHealth = 10;
+
     public enum State
     {
         Idle,
         Patrol,
-        Trapped
+        Trapped,
+        Dying
     }
 
     NavMeshAgent agent;
     float idleTimer;
     State state;
     SoundWord soundEffect;
+    int health;
 
     void Awake()
     {
@@ -23,6 +27,7 @@ public class Ghost : MonoBehaviour
         agent.updateRotation = false;
         agent.updateUpAxis = false;
         soundEffect = GetComponentInChildren<SoundWord>();
+        health = maxHealth;
         EnterIdle();
     }
 
@@ -38,6 +43,9 @@ public class Ghost : MonoBehaviour
                 break;
             case State.Trapped:
                 HandleTrapped();
+                break;
+            case State.Dying:
+                HandleDying();
                 break;
         }
     }
@@ -113,6 +121,17 @@ public class Ghost : MonoBehaviour
         }
     }
 
+    void EnterDying()
+    {
+        state = State.Dying;
+        Destroy(gameObject);
+    }
+
+    void HandleDying()
+    {
+
+    }
+
     void FindNextWaypoint()
     {
         if (agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh)
@@ -124,7 +143,7 @@ public class Ghost : MonoBehaviour
         const int maxAttempts = 10;
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
-            var randomDirection = Random.insideUnitSphere * moveRadius;
+            var randomDirection = UnityEngine.Random.insideUnitSphere * moveRadius;
             var target = origin + randomDirection;
             if (NavMesh.SamplePosition(target, out var navHit, moveRadius, NavMesh.AllAreas))
             {
@@ -135,6 +154,16 @@ public class Ghost : MonoBehaviour
                     return;
                 }
             }
+        }
+    }
+
+    public void TakeDamage(int amount)
+    {
+        health -= amount;
+        health = Mathf.Max(0, health);
+        if (health == 0 && state != State.Dying)
+        {
+            EnterDying();
         }
     }
 }
