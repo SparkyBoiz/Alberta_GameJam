@@ -18,7 +18,6 @@ public class SoundWord : MonoBehaviour
 
     public void Spawn(Vector3 position, Vector3 direction, float size)
     {
-        Debug.Log("Spawn!");
         if (playInterval > 0f && Time.time < nextPlayTime)
         {
             return;

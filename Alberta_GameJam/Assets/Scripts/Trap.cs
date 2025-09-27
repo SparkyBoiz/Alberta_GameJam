@@ -10,13 +10,11 @@ public class Trap : MonoBehaviour
         if (ghost != null)
         {
             StartCoroutine(TrapGhost(ghost));
-            // Disable trap collider to prevent further use
             Collider trapCollider = GetComponent<Collider>();
             if (trapCollider != null)
             {
                 trapCollider.enabled = false;
             }
-            Debug.Log($"Trap triggered by ghost: {ghost.name} at {transform.position}");
         }
     }
 

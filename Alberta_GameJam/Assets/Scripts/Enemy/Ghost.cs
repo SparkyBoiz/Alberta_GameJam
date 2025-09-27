@@ -138,13 +138,3 @@ public class Ghost : MonoBehaviour
         }
     }
 }
-
-
-
-
-
-
-
-
-
-

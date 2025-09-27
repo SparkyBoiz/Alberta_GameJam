@@ -11,6 +11,7 @@ namespace Game.Player
             Idle,
             Moving
         }
+        
         public float moveSpeed = 6f;
         public Game.Core.InputSystem_Actions inputActions;
         private Rigidbody2D _rb;
