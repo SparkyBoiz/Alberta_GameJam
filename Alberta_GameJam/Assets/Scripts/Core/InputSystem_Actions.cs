@@ -1143,7 +1143,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     ]
 }");
         // Player
-        m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
+        m_Player = asset.FindActionMap("Player", throwIfNotFound: true); // Updated to ensure action map is found
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
         m_Player_Look = m_Player.FindAction("Look", throwIfNotFound: true);
         m_Player_Attack = m_Player.FindAction("Attack", throwIfNotFound: true);
