@@ -44,7 +44,6 @@ namespace Game.Enemy
                 _rb.MoveRotation(newAngle);
             }
 
-            // Removed projectile attack logic
         }
 
 
