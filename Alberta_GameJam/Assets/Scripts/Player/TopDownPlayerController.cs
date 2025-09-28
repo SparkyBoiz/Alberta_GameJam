@@ -145,12 +145,11 @@ namespace Game.Player
             BatteryChanged?.Invoke(battery);
         }
 
-        void ChargeBattery(float amount)
+        public void ChargeBattery(float amount)
         {
             battery += amount;
-            battery = Mathf.Max(1f, battery);
+            battery = Mathf.Min(1f, battery);
             BatteryChanged?.Invoke(battery);
         }
-        
     }
 }

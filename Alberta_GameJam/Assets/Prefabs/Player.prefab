@@ -146,10 +146,10 @@ MonoBehaviour:
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 0.469
   m_Color: {r: 0.9949026, g: 1, b: 0.6839622, a: 1}
-  m_Intensity: 6.37
+  m_Intensity: 2
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
-  m_ApplyToSortingLayers: 00000000b53205eb59ddc044eb58975e
+  m_ApplyToSortingLayers: 00000000b53205eb59ddc044eb58975e5f8184c4
   m_LightCookieSprite: {fileID: 21300000, guid: c8df57b465a192d419fee13c11b4b608, type: 3}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -289,7 +289,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85ca291d7dd683f43a7263e0aca903ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Player.TopDownPlayerController
+  _dontDestroyOnLoad: 0
   moveSpeed: 6
+  batteryDrainRate: 0.01
 --- !u!50 &7677180926683753199
 Rigidbody2D:
   serializedVersion: 5
@@ -413,7 +415,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 326df91a07b4bad4da6ce4a4c763930a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

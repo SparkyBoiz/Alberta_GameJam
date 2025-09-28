@@ -1,3 +1,4 @@
+using Game.Player;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -8,6 +9,9 @@ public class Ghost : MonoBehaviour
     [SerializeField] float idleDuration = 3f;
     [SerializeField] int maxHealth = 10;
     [SerializeField] Image healthBar;
+    [SerializeField] float batteryCharge = 0.3f;
+    [SerializeField] SoundWord walkSFX;
+    [SerializeField] SoundWord deadSFX;
 
     public enum State
     {
@@ -20,19 +24,19 @@ public class Ghost : MonoBehaviour
     NavMeshAgent agent;
     float idleTimer;
     State state;
-    SoundWord soundEffect;
     int health;
     public bool isTracked;
+    Animator animator;
 
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         agent.updateRotation = false;
         agent.updateUpAxis = false;
-        soundEffect = GetComponentInChildren<SoundWord>();
         health = maxHealth;
         EnterIdle();
         isTracked = false;
+        animator = GetComponentInChildren<Animator>();
     }
 
     void Update()
@@ -113,7 +117,7 @@ public class Ghost : MonoBehaviour
 
     void HandlePatrol()
     {
-        soundEffect.Spawn(transform.position, Vector3.up, 1f);
+        walkSFX.Spawn(transform.position, Vector3.up, 1f);
         if (agent == null || agent.pathPending)
         {
             return;
@@ -131,7 +135,10 @@ public class Ghost : MonoBehaviour
     void EnterDying()
     {
         state = State.Dying;
-        Destroy(gameObject);
+        agent.isStopped = true;
+        animator.SetTrigger("Die");
+        TopDownPlayerController.Instance.ChargeBattery(batteryCharge);
+        deadSFX.Spawn(transform.position, Vector3.up, 3f);
     }
 
     void HandleDying()
@@ -173,5 +180,10 @@ public class Ghost : MonoBehaviour
         {
             EnterDying();
         }
+    }
+
+    public void OnDyingAnimationCompleted()
+    {
+        Destroy(gameObject);
     }
 }
