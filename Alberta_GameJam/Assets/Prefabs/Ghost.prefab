@@ -538,7 +538,7 @@ PrefabInstance:
     - target: {fileID: 8893545974195141675, guid: 765541e1f744ddb4ca1b70250aedc530, type: 3}
       propertyPath: texture
       value: 
-      objectReference: {fileID: 2800000, guid: 7a2c1b2588cd2294886effbd6b279a44, type: 3}
+      objectReference: {fileID: 2800000, guid: 47124b3eb47d03c4abbb12338c826b56, type: 3}
     - target: {fileID: 8893545974195141675, guid: 765541e1f744ddb4ca1b70250aedc530, type: 3}
       propertyPath: playInterval
       value: 0.5
