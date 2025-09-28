@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 public class GameManager : Singleton<GameManager>
 {
     UIFadeEffect _fadeEffect;
-    
+
     public override void Awake()
     {
         base.Awake();
@@ -34,5 +34,29 @@ public class GameManager : Singleton<GameManager>
     void OnLoaded()
     {
         _fadeEffect.FadeOut();
+    }
+
+    public void GameOver()
+    {
+
+    }
+
+    public void BackToTitle()
+    {
+        Time.timeScale = 1f;
+
+        if (_fadeEffect != null)
+        {
+            _fadeEffect.FadeIn(() => LoadScene("MainMenu"));
+        }
+        else
+        {
+            LoadScene("MainMenu");
+        }
+    }
+
+    public void Quit()
+    {
+        Application.Quit();
     }
 }

@@ -143,6 +143,9 @@ namespace Game.Player
             battery -= batteryDrainRate * Time.deltaTime;
             battery = Mathf.Max(0, battery);
             BatteryChanged?.Invoke(battery);
+
+            if (battery == 0)
+                InGameUIManager.Instance.ShowGameover();
         }
 
         public void ChargeBattery(float amount)

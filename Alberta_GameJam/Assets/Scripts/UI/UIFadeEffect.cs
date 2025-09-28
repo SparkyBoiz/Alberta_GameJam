@@ -56,7 +56,7 @@ public class UIFadeEffect : MonoBehaviour
 
         while (elapsed < _fadeDuration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
             float t = Mathf.Clamp01(elapsed / _fadeDuration);
             SetAlpha(Mathf.Lerp(startAlpha, targetAlpha, t));
             yield return null;
