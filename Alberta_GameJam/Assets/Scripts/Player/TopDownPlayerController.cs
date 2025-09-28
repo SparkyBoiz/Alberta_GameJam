@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+ 
 namespace Game.Player
 {
     [RequireComponent(typeof(Rigidbody2D))]
@@ -11,57 +11,76 @@ namespace Game.Player
             Idle,
             Moving
         }
-        
+       
         public float moveSpeed = 6f;
         public Game.Core.InputSystem_Actions inputActions;
         private Rigidbody2D _rb;
-        private Vector2 _moveInput;
+    private Vector2 _moveInput;
+    private bool _controlsInverted = false;
         private SoundWord _soundWord;
         private Animator _animator;
         public State state { get; private set; }
-
+ 
         private void Awake()
         {
             _rb = GetComponent<Rigidbody2D>();
             _rb.gravityScale = 0f;
             _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
-
+ 
             _soundWord = GetComponentInChildren<SoundWord>();
             _animator = GetComponentInChildren<Animator>();
-
-
+ 
+ 
             if (inputActions == null)
             {
                 inputActions = new Game.Core.InputSystem_Actions();
             }
         }
-
+ 
         private void OnEnable()
         {
             inputActions.Enable();
             inputActions.Player.Move.performed += OnMove;
             inputActions.Player.Move.canceled += OnCancelMove;
         }
-
+ 
         private void OnDisable()
         {
             inputActions.Player.Move.performed -= OnMove;
             inputActions.Player.Move.canceled -= OnCancelMove;
             inputActions.Disable();
         }
-
+ 
         private void OnMove(InputAction.CallbackContext ctx)
         {
-            _moveInput = ctx.ReadValue<Vector2>();
+            var input = ctx.ReadValue<Vector2>();
+            if (_controlsInverted)
+            {
+                input = -input;
+            }
+            _moveInput = input;
             EnterMoving();
         }
-
+        // Invert controls for a duration
+        public void InvertControlsForDuration(float duration)
+        {
+            if (!gameObject.activeInHierarchy) return;
+            StartCoroutine(InvertControlsCoroutine(duration));
+        }
+ 
+        private System.Collections.IEnumerator InvertControlsCoroutine(float duration)
+        {
+            _controlsInverted = true;
+            yield return new WaitForSeconds(duration);
+            _controlsInverted = false;
+        }
+ 
         private void OnCancelMove(InputAction.CallbackContext ctx)
         {
             _moveInput = Vector2.zero;
             EnterIdle();
         }
-
+ 
         void Update()
         {
             switch (state)
@@ -74,7 +93,7 @@ namespace Game.Player
                     break;
             }
         }
-
+ 
         private void FixedUpdate()
         {
             switch (state)
@@ -87,39 +106,39 @@ namespace Game.Player
                     break;
             }
         }
-
+ 
         void EnterIdle()
         {
             _rb.linearVelocity = Vector3.zero;
             state = State.Idle;
             _animator.SetBool("Moving", false);
         }
-
+ 
         void EnterMoving()
         {
             state = State.Moving;
             _animator.SetBool("Moving", true);
         }
-
+ 
         void HandleIdle()
         {
-
+ 
         }
-
+ 
         void HandleIdlePhysics()
         {
-
+ 
         }
-
+ 
         void HandleMoving()
         {
             _soundWord.Spawn(transform.position, Vector3.up, 1f);
         }
-
+ 
         void HandleMovingPhysics()
         {
             _rb.linearVelocity = _moveInput * moveSpeed;
-
+ 
             if (_moveInput.x > 0.01f)
             {
                 transform.localScale = new Vector3(1f, transform.localScale.y, transform.localScale.z);
