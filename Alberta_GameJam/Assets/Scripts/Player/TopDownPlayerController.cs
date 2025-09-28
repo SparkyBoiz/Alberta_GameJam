@@ -1,27 +1,32 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Game.Player
 {
     [RequireComponent(typeof(Rigidbody2D))]
-    public class TopDownPlayerController : MonoBehaviour
+    public class TopDownPlayerController : Singleton<TopDownPlayerController>
     {
         public enum State
         {
             Idle,
             Moving
         }
-        
+
         public float moveSpeed = 6f;
+        public float batteryDrainRate;
         public Game.Core.InputSystem_Actions inputActions;
         private Rigidbody2D _rb;
         private Vector2 _moveInput;
         private SoundWord _soundWord;
         private Animator _animator;
         public State state { get; private set; }
+        public float battery { get; private set; }
+        public Action<float> BatteryChanged;
 
-        private void Awake()
+        public override void Awake()
         {
+            base.Awake();
             _rb = GetComponent<Rigidbody2D>();
             _rb.gravityScale = 0f;
             _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
@@ -34,6 +39,7 @@ namespace Game.Player
             {
                 inputActions = new Game.Core.InputSystem_Actions();
             }
+            battery = 1f;
         }
 
         private void OnEnable()
@@ -48,6 +54,7 @@ namespace Game.Player
             inputActions.Player.Move.performed -= OnMove;
             inputActions.Player.Move.canceled -= OnCancelMove;
             inputActions.Disable();
+            BatteryChanged = null;
         }
 
         private void OnMove(InputAction.CallbackContext ctx)
@@ -73,6 +80,7 @@ namespace Game.Player
                     HandleMoving();
                     break;
             }
+            BatteryDrain();
         }
 
         private void FixedUpdate()
@@ -129,5 +137,20 @@ namespace Game.Player
                 transform.localScale = new Vector3(-1f, transform.localScale.y, transform.localScale.z);
             }
         }
+
+        void BatteryDrain()
+        {
+            battery -= batteryDrainRate * Time.deltaTime;
+            battery = Mathf.Max(0, battery);
+            BatteryChanged?.Invoke(battery);
+        }
+
+        void ChargeBattery(float amount)
+        {
+            battery += amount;
+            battery = Mathf.Max(1f, battery);
+            BatteryChanged?.Invoke(battery);
+        }
+        
     }
 }
